@@ -1,0 +1,367 @@
+<!doctype html>
+<meta charset="utf-8"/>
+<title>Argus Realtime Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uplot@1.6.30/dist/uPlot.min.css">
+<script src="https://cdn.jsdelivr.net/npm/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
+<style>
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",Arial}
+  header{padding:8px 12px;border-bottom:1px solid #e5e7eb;display:flex;gap:12px;align-items:center;justify-content:space-between}
+  .pill{background:#f3f4f6;border-radius:12px;padding:4px 8px}
+  main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 240px;grid-template-rows:1fr 1fr;gap:10px;padding:10px;height:calc(100vh - 50px)}
+  .chart{height:100%;width:100%;position:relative;overflow:hidden}
+  #legend{grid-column:3;grid-row:1 / span 2;border-left:1px solid #e5e7eb;padding-left:10px;overflow:auto}
+  .lg-item{display:flex;align-items:center;gap:8px;font-size:13px;margin:4px 0;white-space:nowrap}
+  .swatch{width:12px;height:12px;border-radius:2px;border:1px solid #e5e7eb}
+  .band{position:absolute;top:0;bottom:0;width:1px;background:#ef4444;opacity:.8}
+</style>
+
+<header>
+  <div><strong>Argus Realtime</strong> <span style="color:#6b7280">ALL vs ACCEPT (30s window)</span></div>
+  <div>
+    <span class="pill" id="ppsAll">pps_all: 0</span>
+    <span class="pill" id="ppsAcc">pps_acc: 0</span>
+    <span class="pill" id="dropped">dropped: 0</span>
+    <span class="pill" id="alert">alert: off</span>
+  </div>
+</header>
+
+<main>
+  <div id="c_pps_all" class="chart"></div>
+  <div id="c_pps_acc" class="chart"></div>
+  <div id="c_cum_all" class="chart"></div>
+  <div id="c_cum_acc" class="chart"></div>
+  <div id="legend">
+    <h4>Top-10 (rolling 30s)</h4>
+    <div id="legendList"></div>
+  </div>
+</main>
+
+<script>
+const WINDOW_S = 30;
+const MAXPTS   = 600;    // 60s @ 10Hz
+const topK     = 10;
+
+//const si = uPlot.fmtSi;
+//const yFmtPPS = (u, vals)=> vals.map(v => si(v, 2) + "pps");
+//const yFmtCnt = (u, vals)=> vals.map(v => si(v, 2));
+const yFmtPPS = (u, vals) => vals.map(v => `${Math.round(v)} pps`);
+const yFmtCnt = (u, vals) => vals.map(v => `${Math.round(v)}`);
+
+// === 새로 추가: 100ms 그리드에 스냅 ===
+const TICK_S = 0.1; // 100ms
+function snapTs(ts){ return Math.round(ts / TICK_S) * TICK_S; }
+
+function mkOpts(title, yFmt){
+  return {
+    title,
+    width: 400, height: 240,
+    scales:{ x:{time:true}, y:{auto:true} },
+    axes:[
+      {
+        grid:{show:true}, ticks:{show:true},
+        // ★ 추가: x축 라벨을 초 단위로 간단히 표시
+        values: (u, vals) => vals.map(v => {
+          const s = Math.floor(v % 60);
+          return s.toString().padStart(2,'0') + "s";
+        }),
+      },
+      {grid:{show:true}, ticks:{show:true}, values: yFmt}
+    ],
+    legend: { show: false },
+    cursor: { y: false },
+    points: { show: true, size: 2 },
+    series:[ {label:"t"} ],
+  };
+}
+
+function fitAll(){
+  [uAll,uAcc,uCumA,uCumB].forEach(u=>{
+    const el = u.root;
+    u.setSize({width: el.clientWidth, height: el.clientHeight});
+  });
+}
+
+function colorForKey(key){
+  let h=0; for(let i=0;i<key.length;i++) h=(h*131+key.charCodeAt(i))>>>0;
+  const hue=h%360, sat=60, light=45;
+  return `hsl(${hue},${sat}%,${light}%)`;
+}
+
+const elA = document.getElementById("c_pps_all");
+const elB = document.getElementById("c_pps_acc");
+const elC = document.getElementById("c_cum_all");
+const elD = document.getElementById("c_cum_acc");
+
+let uAll = new uPlot(mkOpts("PPS (ALL)", yFmtPPS), [[],[]], elA);
+let uAcc = new uPlot(mkOpts("PPS (ACCEPT)", yFmtPPS), [[],[]], elB);
+let uCumA= new uPlot(mkOpts("Rolling 30s (ALL)", yFmtCnt), [[],[]], elC);
+let uCumB= new uPlot(mkOpts("Rolling 30s (ACCEPT)", yFmtCnt), [[],[]], elD);
+// ★ 디버그용 TOTAL 라인 1개씩 미리 등록
+uAll.addSeries({label:"_TOTAL_", stroke:"#666", width:2});
+uAcc.addSeries({label:"_TOTAL_", stroke:"#666", width:2});
+uCumA.addSeries({label:"_TOTAL_", stroke:"#666", width:2});
+uCumB.addSeries({label:"_TOTAL_", stroke:"#666", width:2});
+
+addEventListener("resize", fitAll);
+requestAnimationFrame(fitAll);   // ← 최초 1회 강제 리사이즈
+
+// === 공통 타임라인 & 패널별 Y 버퍼 ===
+const X = [];   // 모든 시리즈가 공유하는 X(초 단위 타임스탬프)
+
+const Y = {
+  pps_all: new Map(),  // ip -> Array<number|NaN>
+  pps_acc: new Map(),
+  cum_all: new Map(),
+  cum_acc: new Map(),
+};
+
+// === 새로 추가: 직전값 보관 맵 ===
+const LAST = {
+  pps_all: new Map(),  // ip -> number
+  pps_acc: new Map(),
+  cum_all: new Map(),
+  cum_acc: new Map(),
+};
+
+// 라인 시리즈 컨테이너
+const lines = {
+  pps_all: new Map(), pps_acc: new Map(),
+  cum_all: new Map(), cum_acc: new Map(),
+  idx_all: new Map(), idx_acc: new Map(),
+  idx_cA:  new Map(), idx_cB:  new Map(),
+};
+
+function ensureSeries(u, idxMap, mapY, ip, color, width=1.5){
+  if (idxMap.has(ip)) return idxMap.get(ip);
+  const idx = u.series.length;
+  idxMap.set(ip, idx);
+  const isCum = (u === uCumA || u === uCumB);
+  u.addSeries({
+    label: ip, stroke: color, width, spanGaps: true,
+    paths: isCum ? uPlot.paths.stepped : null
+  });
+
+  // ★ 새 IP는 현재 X 길이에 맞춰 NaN으로 채워서 길이 동기화
+  if (!mapY.has(ip)) {
+    mapY.set(ip, Array(X.length).fill(0));
+  }
+  return idx;
+}
+
+function pushTick(ts, topIps, pAll, pAcc, cAll, cAcc){
+  // 공통 X 확장
+  X.push(ts);
+
+  // 이번 틱 값: 없으면 '직전값 유지'(처음엔 0)
+  const pick = (map, lastMap, ip) => {
+    if (map.has(ip)) {
+      const v = map.get(ip);
+      lastMap.set(ip, v);
+      return v;
+    }
+    return lastMap.has(ip) ? lastMap.get(ip) : 0;
+  };
+
+  // TopK로 보이는 시리즈는 선등록(색 고정 + 패딩)
+  topIps.forEach(ip=>{
+    const col = colorForKey(ip);
+    ensureSeries(uAll,  lines.idx_all, Y.pps_all, ip, col, 1.5);
+    ensureSeries(uAcc,  lines.idx_acc, Y.pps_acc, ip, col, 1.5);
+    ensureSeries(uCumA, lines.idx_cA,  Y.cum_all, ip, col, 1.5);
+    ensureSeries(uCumB, lines.idx_cB,  Y.cum_acc, ip, col, 1.5);
+  });
+
+  // 이미 존재하는 모든 시리즈에 "한 칸"씩 푸시(관측 없으면 NaN)
+  for (const [ip, arr] of Y.pps_all) arr.push(pick(pAll, LAST.pps_all, ip));
+  for (const [ip, arr] of Y.pps_acc) arr.push(pick(pAcc, LAST.pps_acc, ip));
+  for (const [ip, arr] of Y.cum_all) arr.push(pick(cAll, LAST.cum_all, ip));
+  for (const [ip, arr] of Y.cum_acc) arr.push(pick(cAcc, LAST.cum_acc, ip));
+
+  // 슬라이딩 윈도우/포인트 상한 (X와 모든 Y를 동일하게 pop)
+  const left = ts - WINDOW_S;
+  while (X.length && X[0] < left) {
+    X.shift();
+    for (const mp of [Y.pps_all, Y.pps_acc, Y.cum_all, Y.cum_acc]) {
+      for (const arr of mp.values()) arr.shift();
+    }
+  }
+  while (X.length > MAXPTS) {
+    X.shift();
+    for (const mp of [Y.pps_all, Y.pps_acc, Y.cum_all, Y.cum_acc]) {
+      for (const arr of mp.values()) arr.shift();
+    }
+  }
+}
+
+function setDataFor(u, idxMap, mapY){
+  const data = [X];
+  for (let i=1;i<u.series.length;i++){
+    const label = u.series[i].label;
+    const arr = mapY.get(label);
+    data.push(arr ? arr : Array(X.length).fill(NaN));
+  }
+  u.setData(data);
+}
+
+function renderLegend(ips){
+  const box = document.getElementById("legendList");
+  box.innerHTML = "";
+  ips.forEach(ip=>{
+    const div = document.createElement("div");
+    div.className = "lg-item";
+    const sw = document.createElement("span");
+    sw.className = "swatch";
+    sw.style.background = colorForKey(ip);
+    const txt = document.createElement("span");
+    txt.textContent = ip;
+    div.appendChild(sw); div.appendChild(txt);
+    box.appendChild(div);
+  });
+}
+
+// 퍼센타일(p95) 계산
+function p95(arr){
+  if (!arr.length) return 0;
+  const a = arr.slice().sort((x,y)=>x-y);
+  const idx = Math.floor(0.95*(a.length-1));
+  return a[idx];
+}
+
+// sticky autorange (증가는 즉시, 감소는 서서히)
+function stickyUpdate(prevMax, obsMax, now, lastRaiseAt, decaySec=20){
+  if (obsMax > prevMax) { lastRaiseAt = now; return [obsMax, lastRaiseAt]; }
+  const since = now - lastRaiseAt;
+  const target = Math.max(obsMax, prevMax * Math.exp(-since/decaySec));
+  return [target, lastRaiseAt];
+}
+
+let yMaxAll=100, yMaxAcc=100, yMaxCumA=100, yMaxCumB=100;
+let lastRaiseAll=0, lastRaiseAcc=0, lastRaiseCumA=0, lastRaiseCumB=0;
+
+function updateYScale(u, getVisibleValues, yMaxRef, lastRaiseRef){
+  const now = performance.now()/1000;
+  const vals = getVisibleValues();
+  const obs = p95(vals) * 1.1; // p95 + 10% padding
+  const r = stickyUpdate(yMaxRef.v, obs, now, lastRaiseRef.v, 20);
+  yMaxRef.v = Math.max(r[0], 1);
+  lastRaiseRef.v = r[1];
+  u.setScale('y', {max: yMaxRef.v, min: 0});
+}
+
+function getAllVisible(map){
+  const all = [];
+  for (const arr of map.values()) {
+    if (arr.length) all.push(...arr.filter(v => Number.isFinite(v)));
+  }
+  return all;
+}
+
+// 이벤트 밴드(수직 라인) — uPlot에 overlay
+function addBand(u, ts, color){
+  const over = u.root.querySelector(".u-over");
+  const xPos = Math.round(u.valToPos(ts, 'x', true));
+  const band = document.createElement("div");
+  band.className = "band";
+  band.style.left = xPos+"px";
+  band.style.background = color;
+  band.style.opacity = 0.7;
+  over.appendChild(band);
+  // 오래된 밴드는 윈도우 밖으로 밀리면 GC (간단: 200개 초과 시 제거)
+  const bands = over.querySelectorAll(".band");
+  if (bands.length > 200) over.removeChild(bands[0]);
+}
+
+const wsUrl = (location.origin.replace(/^http/,"ws") + "/ws");
+// --- DEBUG: TOTAL만 간단히 그리기용 버퍼 ---
+const XT = [];       // 공통 X (epoch seconds, 100ms 스냅)
+const YT_ALL = [];   // TOTAL pps_all
+const YT_ACC = [];   // TOTAL pps_acc
+// --------------------------------------------
+const ws = new WebSocket(wsUrl);
+
+ws.onmessage = (e) => {
+  const d = JSON.parse(e.data);
+  const ts = snapTs(d.ts_wall); // seconds (100ms 격자)
+
+  // 상단 배지
+  document.getElementById("ppsAll").textContent = "pps_all: " + Math.round(d.pps_all || 0);
+  document.getElementById("ppsAcc").textContent = "pps_acc: " + Math.round(d.pps_acc || 0);
+  document.getElementById("dropped").textContent = "dropped: " + (d.dropped_frames || 0);
+  document.getElementById("alert").textContent   = "alert: " + (d.alert?.on ? "ON" : "off");
+
+  // TopK(30s 누적 합) → 비면 pps 기반 시드
+  const mix = new Map();
+  (d.cum30s_all || []).forEach(o => mix.set(o.ip, (mix.get(o.ip) || 0) + o.sum));
+  (d.cum30s_acc || []).forEach(o => mix.set(o.ip, (mix.get(o.ip) || 0) + o.sum));
+  let ips = Array.from(mix.entries()).sort((a,b)=>b[1]-a[1]).slice(0, topK).map(([ip])=>ip);
+  if (ips.length === 0) {
+    ips = Array.from(new Set([
+      ...(d.pps_ip_all || []).map(o => o.ip),
+      ...(d.pps_ip_acc || []).map(o => o.ip),
+    ])).slice(0, topK);
+  }
+
+  // 값 맵
+  const pAll = new Map((d.pps_ip_all || []).map(o => [o.ip, o.pps]));
+  const pAcc = new Map((d.pps_ip_acc || []).map(o => [o.ip, o.pps]));
+  const cAll = new Map((d.cum30s_all || []).map(o => [o.ip, o.sum]));
+  const cAcc = new Map((d.cum30s_acc || []).map(o => [o.ip, o.sum]));
+
+  // TOTAL (프레임 집계 우선, 없으면 합계)
+  const sumMap = m => Array.from(m.values()).reduce((a,b)=>a+b, 0);
+  const totalPpsAll = Number.isFinite(d.pps_all) ? Number(d.pps_all) : sumMap(pAll);
+  const totalPpsAcc = Number.isFinite(d.pps_acc) ? Number(d.pps_acc) : sumMap(pAcc);
+  const totalCumAll = sumMap(cAll);
+  const totalCumAcc = sumMap(cAcc);
+
+  // TOTAL 시리즈 보장(색 중립)
+  ensureSeries(uAll,  lines.idx_all, Y.pps_all, "_TOTAL_", "#666", 2.2);
+  ensureSeries(uAcc,  lines.idx_acc, Y.pps_acc, "_TOTAL_", "#666", 2.2);
+  ensureSeries(uCumA, lines.idx_cA,  Y.cum_all, "_TOTAL_", "#666", 2.2);
+  ensureSeries(uCumB, lines.idx_cB,  Y.cum_acc, "_TOTAL_", "#666", 2.2);
+
+  // TOTAL 값 주입
+  pAll.set("_TOTAL_", totalPpsAll);
+  pAcc.set("_TOTAL_", totalPpsAcc);
+  cAll.set("_TOTAL_", totalCumAll);
+  cAcc.set("_TOTAL_", totalCumAcc);
+
+  // 한 틱 누적
+  pushTick(ts, ips, pAll, pAcc, cAll, cAcc);
+
+  // 범례 갱신
+  renderLegend(ips);
+
+  // 차트 반영
+  setDataFor(uAll,  lines.idx_all, Y.pps_all);
+  setDataFor(uAcc,  lines.idx_acc, Y.pps_acc);
+  setDataFor(uCumA, lines.idx_cA,  Y.cum_all);
+  setDataFor(uCumB, lines.idx_cB,  Y.cum_acc);
+
+  // x/y 스케일 + sticky autorange
+  const left = ts - WINDOW_S;
+  [uAll, uAcc, uCumA, uCumB].forEach(u => u.setScale('x', {min:left, max:ts}));
+  updateYScale(uAll,  ()=>getAllVisible(Y.pps_all), {v:yMaxAll},  {v:lastRaiseAll});
+  updateYScale(uAcc,  ()=>getAllVisible(Y.pps_acc), {v:yMaxAcc},  {v:lastRaiseAcc});
+  updateYScale(uCumA, ()=>getAllVisible(Y.cum_all), {v:yMaxCumA}, {v:lastRaiseCumA});
+  updateYScale(uCumB, ()=>getAllVisible(Y.cum_acc), {v:yMaxCumB}, {v:lastRaiseCumB});
+
+  // 이벤트 밴드(옵션)
+  (d.events || []).forEach(ev => {
+    const col =
+      ev.type === "ALERT_ON" ? "#ef4444" :
+      ev.type === "ALERT_OFF"? "#10b981" :
+      ev.type === "DROP_ON"  ? "#f59e0b" :
+      ev.type === "DROP_OFF" ? "#3b82f6" : "#9ca3af";
+    [uAll,uAcc,uCumA,uCumB].forEach(u => addBand(u, ev.ts_wall, col));
+  });
+
+  if (!fitScheduled) {
+    fitScheduled = true;
+    requestAnimationFrame(() => { fitAll(); fitScheduled = false; });
+  }
+};
+
+let fitScheduled=false;
+</script>
+
