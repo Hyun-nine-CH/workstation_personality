@@ -1,3 +1,4 @@
+/*
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -86,6 +87,96 @@ int main(){
                 exit=true;
                 break;
         }
+    }
+    return 0;
+}
+*/
+
+#include <stdio.h>
+#include <stdbool.h>
+
+#define BUF_SIZ 5
+
+typedef struct {
+    int head;
+    int tail;
+    int cnt;
+    int buf[BUF_SIZ];
+} cirb;
+
+void initBuf(cirb* v){
+    v->head=v->tail=v->cnt=0;
+}
+
+bool enQ(cirb* v, int s){
+    if(v->cnt==BUF_SIZ){
+        printf("the buf ring is occupy %d\n",s);
+        return false;
+    }
+    v->buf[v->head]=s;
+    v->head=(v->head+1)%BUF_SIZ;
+    v->cnt++;
+    printf("head<-%d, add %d\n",v->head,s);
+    return true;
+}
+
+bool deQ(cirb* v, int *s){
+    if(v->cnt==0){
+        printf("the buf ring is unoccupy\n");
+        return false;
+    }
+    *s=v->buf[v->tail];
+    v->tail=(v->tail+1)%BUF_SIZ;
+    v->cnt--;
+    printf("tail->%d, del %d\n",v->tail,*s);
+    return true;
+}
+
+void printb(cirb* v){
+    printf("\n[current buf] cnt=%d\n",v->cnt);
+    for(int i=0;i<BUF_SIZ;i++){
+        if(i==v->head&&i==v->tail)
+            printf("[%d]*head & tail ",v->buf[i]);
+        else if(i==v->head)
+            printf("[%d]*head ",v->buf[i]);
+        else if(i==v->tail)
+            printf("[%d]*tail ",v->buf[i]);
+        else
+            printf("[%d] ",v->buf[i]);
+    }
+    printf("\n\n");
+}
+
+int main(){
+    cirb v;
+    initBuf(&v);
+    char cmd;
+    int s;
+
+    printf("===self test_ring buf===\n");
+    printf("add: (a), del: (d), prt: (p), qut: (q)\n");
+
+    while(1){
+        printf(">> ");
+        scanf(" %c",&cmd);
+        if(cmd=='a'){
+            printf("add num: ");
+            scanf("%d", &s);
+            enQ(&v,s);
+        }
+        else if(cmd=='d'){
+            if(deQ(&v,&s))
+                printf("deleted val: %d\n",s);
+        }
+        else if(cmd=='p'){
+            printb(&v);
+        }
+        else if(cmd=='q'){
+            printf("program quit\n");
+            break;
+        }
+        else
+            printf("please choose the action icon: (a), (d), (p), (q)\n");
     }
     return 0;
 }
