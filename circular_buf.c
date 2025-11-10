@@ -94,6 +94,7 @@ int main(){
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define BUF_SIZ 5
 
@@ -106,6 +107,7 @@ typedef struct {
 
 void initBuf(cirb* v){
     v->head=v->tail=v->cnt=0;
+    memset(v->buf,0,sizeof(v->buf));
 }
 
 bool enQ(cirb* v, int s){
@@ -134,10 +136,19 @@ bool deQ(cirb* v, int *s){
 
 void printb(cirb* v){
     printf("\n[current buf] cnt=%d\n",v->cnt);
+
+    int head_pos;
+    if(v->cnt==0){
+	    head_pos=v->head; // init에 의해, v->tail과도 같음
+	}else{
+		head_pos=(v->head+BUF_SIZ-1)%BUF_SIZ;
+	}
     for(int i=0;i<BUF_SIZ;i++){
-        if(i==v->head&&i==v->tail)
+        if(v->cnt==0&&i==v->tail)
             printf("[%d]*head & tail ",v->buf[i]);
-        else if(i==v->head)
+	else if(i==head_pos&&i==v->tail)
+		printf("[%d]*head & tail ",v->buf[i]);
+        else if(i==head_pos)
             printf("[%d]*head ",v->buf[i]);
         else if(i==v->tail)
             printf("[%d]*tail ",v->buf[i]);
