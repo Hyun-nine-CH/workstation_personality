@@ -41,5 +41,5 @@ int main(void){
     exit(0);
 }
 void sig_int(int signo){
-    printf("interrupt\n%% ");
+    printf("\ninterrupt\n%% ");
 }
