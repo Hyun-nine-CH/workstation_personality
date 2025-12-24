@@ -1,0 +1,246 @@
+st
+
+Frame 121758: 2349 bytes on wire (18792 bits), 2349 bytes captured (18792 bits) on interface enp11s0, id 0
+    Section number: 1
+    Interface id: 0 (enp11s0)
+        Interface name: enp11s0
+    Encapsulation type: Ethernet (1)
+    Arrival Time: Dec 23, 2025 15:47:18.22069121 KST
+    UTC Arrival Time: Dec 23, 2025 06:47:18.220696121 UTC
+    Epoch Arrival Time: 1766472438.220696121
+    [Time shift for this packet: 0.000000000 seconds]
+    [Time delta from previous captured frame: 0.000258979 seconds]
+    [Time delta from previous displayed frame: 0.000258979 seconds]
+    [Time since reference  or first frame: 4526.666935091 seconds]
+    Frame Number: 121758
+    Frame Length: 2349 bytes (18792 bits)
+    Capture Length: 2349 bytes (18792 bits)
+    [Frame is marked: False]
+    [Frame is ignored: False]
+    [Protocols in frame: eth:ethertype:ip:tcp:http:xml]
+    [Coloring Rule Name: HTTP]
+    [Coloring Rule String: http || tcp.port == 80 || http2]
+Ethernet II, Src: PCSSystemtec_f3:3d:05 (08:00:27:f3:3d:05), Dst: 34:5a:60:a8:c2:3f (34:5a:60:a8:c2:3f)
+    Destination: 34:5a:60:a8:c2:3f (34:5a:60:a8:c2:3f)
+        Address: 34:5a:60:a8:c2:3f (34:5a:60:a8:c2:3f)
+        .... ..0. .... .... .... .... = LG bit: Globally unique address (factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Source: PCSSystemtec_f3:3d:05 (08:00:27:f3:3d:05)
+        Address: PCSSystemtec_f3:3d:05 (08:00:27:f3:3d:05)
+        .... ..0. .... .... .... .... = LG bit: Globally unique address (factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Type: IPv4 (0x0800)
+Internet Protocol Version 4, Src: 192.168.1.136, Dst: 192.168.3.240
+    0100 .... = Version: 4
+    .... 0101 = Header Length: 20 bytes (5)
+    Differentiated Services Field: 0x00 (DSCP: CS0, ECN: Not-ECT)
+        0000 00.. = Differentiated Services Codepoint: Default (0)
+        .... ..00 = Explicit Congestion Notification: Not ECN-Capable Transport (0)
+    Total Length: 2335
+    Identification: 0x533c (21308)
+    010. .... = Flags: 0x2, Don't fragment
+        0... .... = Reserved bit: Not Set
+        .1.. .... = Don't fragment: Set
+        ..0. .... = More fragments: Not set
+    ...0 0000 0000 0000 = Fragment Offset: 0
+    Time to Live: 64
+    Protocol: TCP (6)
+    Header Checksum: 0x57d4 [validation disabled]
+    [Header checksum status: Unverified]
+    Source Address: 192.168.1.136
+    Destination Address: 192.168.3.240
+Transmission Control Protocol, Src Port: 42768, Dst Port: 7547, Seq: 1, Ack: 1, Len: 2283
+    Source Port: 42768
+    Destination Port: 7547
+    [Stream index: 416]
+    [Conversation completeness: Complete, WITH_DATA (31)]
+        ..0. .... = RST: Absent
+        ...1 .... = FIN: Present
+        .... 1... = Data: Present
+        .... .1.. = ACK: Present
+        .... ..1. = SYN-ACK: Present
+        .... ...1 = SYN: Present
+        [completeness Flags: ·FDASS]
+    [TCP Segment Len: 2283]
+    Sequence Number: 1    (relative sequence number)
+    Sequence Number (raw): 1591270000
+    [Next Sequence Number: 2284    (relative sequence number)]
+    Acknowledgment Number: 1    (relative ack number)
+    Acknowledgment number (raw): 4173063069
+    1000 .... = Header Length: 32 bytes (8)
+    Flags: 0x018 (PSH, ACK)
+        000. .... .... = Reserved: Not set
+        ...0 .... .... = Accurate ECN: Not set
+        .... 0... .... = Congestion Window Reduced: Not set
+        .... .0.. .... = ECN-Echo: Not set
+        .... ..0. .... = Urgent: Not set
+        .... ...1 .... = Acknowledgment: Set
+        .... .... 1... = Push: Set
+        .... .... .0.. = Reset: Not set
+        .... .... ..0. = Syn: Not set
+        .... .... ...0 = Fin: Not set
+        [TCP Flags: .......AP...]
+    Window: 502
+    [Calculated window size: 64256]
+    [Window size scaling factor: 128]
+    Checksum: 0x8fda [unverified]
+    [Checksum Status: Unverified]
+    Urgent Pointer: 0
+    Options: (12 bytes), No-Operation (NOP), No-Operation (NOP), Timestamps
+        TCP Option - No-Operation (NOP)
+            Kind: No-Operation (1)
+        TCP Option - No-Operation (NOP)
+            Kind: No-Operation (1)
+        TCP Option - Timestamps
+            Kind: Time stamp Option (8)
+            Length: 10
+            Timestamp value: 50694625: TSval 50694625, TSecr 2495165110
+            Timestamp echo reply: 2495165110
+    [Timestamps]
+        [Time since first frame in this TCP stream: 0.001444537 seconds]
+        [Time since previous frame in this TCP stream: 0.000258979 seconds]
+    [SEQ/ACK analysis]
+        [iRTT: 0.001185558 seconds]
+        [Bytes in flight: 2283]
+        [Bytes sent since last PSH flag: 2283]
+    TCP payload (2283 bytes)
+Hypertext Transfer Protocol
+    POST / HTTP/1.1\r\n
+        [Expert Info (Chat/Sequence): POST / HTTP/1.1\r\n]
+            [POST / HTTP/1.1\r\n]
+            [Severity level: Chat]
+            [Group: Sequence]
+        Request Method: POST
+        Request URI: /
+        Request Version: HTTP/1.1
+    Content-Length: 2070\r\n
+        [Content length:2070]
+    Content-Type: text/xml; charset="utf-8"\r\n
+    Authorization: Basic OEtBOFdBMTE1MTEwMDA0Mzo=\r\n
+        Credentials: 8KA8WA1151100043:
+    Cookie: session=26520b8592d6d429\r\n
+        Cookie pair: session=26520b8592d6d429
+    Host: 192.168.3.240:7547\r\n
+    Connection: keep-alive\r\n
+    \r\n
+    [Full request URI: http://192.168.3.240:7547/]
+    [HTTP request 1/2]
+    [Response in frame: 121760]
+    [Next request in frame: 121762]
+    File Data: 2070 bytes
+eXtensible Markup Language
+    <?xml
+        version="1.0"
+        encoding="UTF-8"
+        ?>
+    <soap-env:Envelope
+        xmlns:soap-enc="http://schemas.xmlsoap.org/soap/encoding/"
+        xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:cwmp="urn:dslforum-org:cwmp-1-0">
+        <soap-env:Header>
+            <cwmp:ID
+                soap-env:mustUnderstand="1">
+                c0mwoh59
+                </cwmp:ID>
+            </soap-env:Header>
+        <soap-env:Body>
+            <cwmp:Inform>
+                <DeviceId>
+                    <Manufacturer>
+                        Huawei Technologies Co., Ltd.
+                        </Manufacturer>
+                    <OUI>
+                        202BC1
+                        </OUI>
+                    <ProductClass>
+                        BM632w
+                        </ProductClass>
+                    <SerialNumber>
+                        000000
+                        </SerialNumber>
+                    </DeviceId>
+                <Event
+                    soap-enc:arrayType="cwmp:EventStruct[1]">
+                    <EventStruct>
+                        <EventCode>
+                            2 PERIODIC
+                            </EventCode>
+                        <CommandKey/>
+                        </EventStruct>
+                    </Event>
+                <MaxEnvelopes>
+                    1
+                    </MaxEnvelopes>
+                <CurrentTime>
+                    2025-12-23T06:47:18.224Z
+                    </CurrentTime>
+                <RetryCount>
+                    0
+                    </RetryCount>
+                <ParameterList
+                    soap-enc:arrayType="cwmp:ParameterValueStruct[16]">
+                    <ParameterValueStruct>
+                        <Name>
+                            InternetGatewayDevice.DeviceInfo.SpecVersion
+                            </Name>
+                        <value
+                            xsi:type="xsd:string">
+                            1
+                            </Value>
+                        </ParameterValueStruct>
+                    <ParameterValueStruct>
+                        <Name>
+                            InternetGatewayDevice.DeviceInfo.HardwareVersion
+                            </Name>
+                        <Value
+                            xsi:type="xsd:string">
+                            40501
+                            </Value>
+                        </ParameterValueStruct>
+                    <ParameterValueStruct>
+                        <Name>
+                            InternetGatewayDevice.DeviceInfo.SoftwareVersion
+                            </Name>
+                        <Value
+                            xsi:type="xsd:string">
+                            V100R001IRQC56B017
+                            </Value>
+                        </ParameterValueStruct>
+                    <ParameterValueStruct>
+                        <Name>
+                            InternetGatewayDevice.DeviceInfo.ProvisioningCode
+                            </Name>
+                        <Value
+                            xsi:type="xsd:string"/>
+                        </ParameterValueStruct>
+                    <ParameterValueStruct>
+                        <Name>
+                            InternetGatewayDevice.ManagementServer.ParameterKey
+                            </Name>
+                        <Value
+                            xsi:type="xsd:string"/>
+                        </ParameterValueStruct>
+                    <ParameterValueStruct>
+                        <Name>
+                            InternetGatewayDevice.ManagementServer.ConnectionRequestURL
+                            </Name>
+                        <Value
+                            xsi:type="xsd:string">
+                            http://192.168.1.136:58495/
+                            </Value>
+                        </ParameterValueStruct>
+                    <ParameterValueStruct>
+                        <Name>
+                            InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANIPConnection.1.ExternalIPAddress
+                            </Name>
+                        <Value
+                            xsi:type="xsd:string">
+                            172.3.89.139
+                            </Value>
+                        </ParameterValueStruct>
+                    </ParameterList>
+                </cwmp:Inform>
+            </soap-env:Body>
+        </soap-env:Envelope>
