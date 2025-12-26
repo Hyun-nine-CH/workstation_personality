@@ -27,7 +27,7 @@ int main(int argc,char* argv[]){
     #ifdef _PC_MAX_CANON
         pr_pathconf("MAX_CANON =",argv[1],_PC_MAX_CANON);
     #else
-        printf("no symbol for _PC_MAX_CANON\n")
+        printf("no symbol for _PC_MAX_CANON\n");
     #endif
     /* ...pathconf*/
         exit(0);
@@ -49,4 +49,20 @@ int main(int argc,char* argv[]){
             printf(" %ld\n",val);
         }
     }
-    static void pr_pathconf(char* mesg, char *path, int name)
+    static void pr_pathconf(char* mesg, char *path, int name){
+        long    val;
+        fputs(mesg, stdout);
+        errno=0;
+        if((val=pathconf(path,name))<0){
+            if(errno!=0){
+                if(errno==EINVAL)
+                    fputs(" (not supported)\n",stdout);
+                else
+                    err_sys("pathconf error,path=%s",path);
+            }else{
+                fputs(" (no limit)\n",stdout);
+            }
+        }else{
+            printf(" %ld\n",val);
+        }
+    }
