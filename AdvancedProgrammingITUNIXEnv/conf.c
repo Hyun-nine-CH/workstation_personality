@@ -19,6 +19,7 @@ int main(int argc,char* argv[]){
         printf("no symbol for _SC_ARG_MAX\n");
     #endif
     /* ...sysconf*/
+    /* similar processing for all the rest of the sysconf symbols...*/
     #ifdef MAX_CANON
         printf("MAX_CANON defined to be %ld\n",(long)MAX_CANON+0);
     #else
