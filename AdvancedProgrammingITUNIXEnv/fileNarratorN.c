@@ -10,6 +10,8 @@ static long openmax=0;
 
 /*
 an arbitrary value for a discorrection
+
+If OPEN_MAX is indeterminate, this might be inadequate!
 */
 #define OPEN_MAX_GUESS  256
 
