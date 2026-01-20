@@ -1,15 +1,18 @@
-[0] pathName.c
-[1] stdIO.c
-[2] stdIO_1.c
-[3] pid.c
-[4] prcCtrl.c
-[5] err.c
-[6] ID.c
-[7] signal.c
-[8] conf.c
-[9] asynchronPath.c
-[10] fileNarratorN.c
-[11] seeking.c
-[12] thereIsHoll.c
-[13] IOProgram.c
-[14] 
+
+
+[0] pathName.c -> pathName
+[1] stdIO.c -> stdIO
+[2] stdIO_1.c -> stdIO1
+[3] pid.c -> pid
+[4] prcCtrl.c -> prcCtrl
+[5] err.c -> err
+[6] ID.c -> id
+[7] signal.c -> signal
+[8] conf.c -> conf
+[9] asynchronPath.c -> 
+[10] fileNarratorN.c -> 
+[11] seeking.c -> 
+[12] thereIsHoll.c -> 
+[13] IOProgram.c -> IOP
+[14] 3.11 Print file flags for specified descriptor, fileFlags.c -> ffla
+[15] 3.12 Turn on one or more of the file status flags for a descriptor, moreFlags.c -> 
