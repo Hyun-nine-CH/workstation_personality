@@ -18,6 +18,6 @@
 [15] 3.12 Turn on one or more of the file status flags for a descriptor, moreFlags.c -> nothing
 [16] { files and directories }: 4.3 Print type of file for each CLA (Command-Line Argument), typeCLA.c -> tCLA
 [17] 4.8 Example of access function, accFunc.c -> accf
-[18]
+[18] 4.9 Example of umask function, umask.c -> umask
 [19]
 [20]
