@@ -19,5 +19,8 @@
 [16] { files and directories }: 4.3 Print type of file for each CLA (Command-Line Argument), typeCLA.c -> tCLA
 [17] 4.8 Example of access function, accFunc.c -> accf
 [18] 4.9 Example of umask function, umask.c -> umask
-[19]
-[20]
+[19] 4.12 Example of chmod function, chmod.c -> chmod
+[20] 4.16 Open a file and then unlink it, unlink.c -> unl
+[21]
+[22]
+[23]
