@@ -1,0 +1,14 @@
+
+[0]
+With this example, we see the need for fcntl.
+Our program operates on a descriptor (standard output), never knowing the name of the file that was opened on that descriptor. we can't set the O_SYNC flag when the file that is opened,
+since the shell opened the file. With fcntl we can modify the properties of a descriptor, knowing only the descriptor for the open file. we'll see another need for fcntl when we describe nonblocking pipes,
+since all we have with a pipe is a descriptor.
+
+[1]
+the ioctl function has always been the catchall for I/O operations.
+the ioctl function was included in the Single UNIX Specfication only as an extension for dealing with STREAMS devices, but it was moved to obsolescent status in SUSv4. UNIX System implementations use ioctl for many miscellaneous device operations. Some implementations have even extended it for use with regular file.
+
+most systems ignore the specified mode, whereas others require that it be a subset of the mode used when the referenced file (standard input, in this case) was originally opened.
+
+Beware of doing this on Linux. Because the Linux implementation uses symbolic links to the real files, using creat on a /dev/fd file will result in the underlying file being truncated.
