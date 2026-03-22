@@ -28,4 +28,4 @@
 [23]
 
 [24] 10.1 Signals
-[25] 
+[25] 10.2 Simple program to catch SIGUSR1 and SIGUSR2, sigusr.c -> 
