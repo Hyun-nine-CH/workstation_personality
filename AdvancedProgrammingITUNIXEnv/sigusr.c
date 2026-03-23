@@ -14,9 +14,9 @@ int main(void){
 
 /* argument is signal number */
 static void sig_usr(int signo){
-    if(signo=="SIGUSR1")
+    if(signo==SIGUSR1)
         printf("received signal1\n");
-    else if(signo=="SIGUSR2")
+    else if(signo==SIGUSR2)
         printf("received sigusr2\n");
     else
         err_dump("received signal %d\n",signo);
