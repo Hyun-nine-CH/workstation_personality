@@ -12,3 +12,30 @@ the ioctl function was included in the Single UNIX Specfication only as an exten
 most systems ignore the specified mode, whereas others require that it be a subset of the mode used when the referenced file (standard input, in this case) was originally opened.
 
 Beware of doing this on Linux. Because the Linux implementation uses symbolic links to the real files, using creat on a /dev/fd file will result in the underlying file being truncated.
+
+The reason the signal handler is declared as returning an integer is that these early systems didn't support the ISO C void data type.
+
+The problem with this code fragment is that there is a window of time --- after the signal has occurred, but before the call to signal in the signal handler --- when the interrupt signal could occur another time. This second signal would cause the default action to occur, which for this signal terminates the process.
+
+there are times when we would like to tell the system "prevent the following signals from interrupting me, but remember if they do occur." the classic example that demonstrates this flaw is shown by a piece of code that catches a signal and sets a flag for the process that indicates that the signal occurred
+
+Reads that can block the caller forever if data isn't present with certain file types (pipes, terminal devices, and network devices)
+such as a terminal device open waiting until an attached modem answers the phone
+
+the pause function (which by definition puts the calling process to sleep until a signal is caught) and the wait function
+
+when a process initiates a read from a terminal device and the user at the terminal walks away from the terminal for an extended period.
+the process could be blocked for hours or days and would remain so unless the system was taken down.
+
+earlier versions gave implementations a choice of how to deal with reads and writes that have processed partial amounts of data.
+
+Besides being reentrant, they block any signals during operation if delivery of a signal might cause inconsistencies.
+
+[nonreentrant func.]
+when the signal handler returned after several iterations the program would be terminated by a SIGSEGV signal
+
+An examination showed that the main function had called getpwnam, but that when getpwnam called free, the signal handler interrupted it and called getpwnam, which in turn called free.
+
+the data structures maintained by malloc and free had been corrupted when the signal handler (indirectly) called free while the main function was also calling free.
+
+Occationally, the program would run for several seconds before crashing with a SIGSEGV error.
