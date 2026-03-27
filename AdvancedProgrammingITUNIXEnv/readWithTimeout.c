@@ -1,3 +1,4 @@
+/* start self code review */
 #include "apue.h"
 
 static void sig_alrm(int);
@@ -10,8 +11,12 @@ int main(void){
         err_sys("signal(SIGALRM) error");
 
     alarm(10);
+
+    /* start a blocking function */
     if((n=read(STDIN_FILENO,line,MAXLINE))<0)
-        err_sys("read error");
+        err_sys("read error");      /* after 10.0 seconds, the read function returns -1 */
+    
+    /* jump up this below and move a handler sig_alrm(int signo) */
     alarm(0);
 
     write(STDOUT_FILENO,line,n);
