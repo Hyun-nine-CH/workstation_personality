@@ -5,10 +5,11 @@
 <signal.h> usually defines NSIG to include signal number 0.
 */
 
+typedef unsigned long ulong_t;
 // #define NSIG        32
 #define SIGBAD(signo)       ((signo)<=0||(signo)>=NSIG)         /* verdict invalid value */
-#define IDX(s)              ((s-1)/(8*sizeof(unsigned long)))
-#define BIT(s)              ((s-1)%(8*sizeof(unsigned long)))
+#define IDX(s)              ((s-1)/(8*sizeof(ulong_t)))
+#define BIT(s)              ((s-1)%(8*sizeof(ulong_t)))
 
 // typedef unsigned long sigset_t;
 int sigaddset(sigset_t* set,int signo){
