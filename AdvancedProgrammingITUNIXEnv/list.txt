@@ -12,11 +12,11 @@
 [9] asynchronPath.c -> 
 [10] fileNarratorN.c -> 
 
-[11] seeking.c -> 
-[12] thereIsHoll.c -> 
-[13] IOProgram.c -> IOP
+[11] 3.1 Test whether standard input is capable of seeking, seeking.c -> seeking
+[12] 3.2 Create a file with a hole in it, thereIsaHole.c -> thereIsaHole
+[13] 3.5 Copy standard input to standard output, IOProgram.c -> IOP
 [14] 3.11 Print file flags for specified descriptor, fileFlags.c -> ffla
-[15] 3.12 Turn on one or more of the file status flags for a descriptor, moreFlags.c -> nothing
+[15] 3.12 Turn on one or more of the file status flags for a descriptor, moreFlags.c
 
 [16] { files and directories }: 4.3 Print type of file for each CLA (Command-Line Argument), typeCLA.c -> tCLA
 [17] 4.8 Example of access function, accFunc.c -> accf
@@ -29,5 +29,13 @@
 
 [24] 10.1 Signals
 [25] 10.2 Simple program to catch SIGUSR1 and SIGUSR2, sigusr.c -> sigusr
-
-
+[26] 10.5 Call a nonreentrant function from a signal handler, nonreentrant.c -> nonreen
+[27] 10.6 System V SIGCLD handler that doesn't work, sysVsigcld.c -> sysV
+[28] 10.7 Simple, incomplete implementation of sleep, sleep.c
+[29] 10.8 Another (imperfect) implementation of sleep, anotherSlp.c
+[30] 10.9 Calling sleep2 from a program that catches other signals, slpCatOtSig.c -> slpCat
+[31] 10.10 Calling read with a timeout, readWithTimeout.c -> readT
+[32] 10.11 Calling read with a timeout using longjmp, readlongjmp.c -> readJ
+[33] 10.12 An implementation of sigaddset, sigdelset, and sigismember, sigMulti.c 
+[34] 10.14 Print the signal mask for the process, sigProcMask.c
+[35] 
