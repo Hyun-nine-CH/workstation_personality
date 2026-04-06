@@ -38,4 +38,5 @@
 [32] 10.11 Calling read with a timeout using longjmp, readlongjmp.c -> readJ
 [33] 10.12 An implementation of sigaddset, sigdelset, and sigismember, sigMulti.c 
 [34] 10.14 Print the signal mask for the process, sigProcMask.c
-[35] 10.15 Example of signal sets and sigprocmask, 
+[35] 10.15 Example of signal sets and sigprocmask, sigPending.c -> sigP
+
